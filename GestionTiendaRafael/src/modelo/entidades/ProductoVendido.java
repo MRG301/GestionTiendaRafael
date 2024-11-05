@@ -2,14 +2,14 @@ package modelo.entidades;
 
 public class ProductoVendido {
 
-    private int idProductoVendido;
-    private int idVenta;
-    private int idProducto;
+    private long idProductoVendido;
+    private long idVenta;
+    private long idProducto;
     private int cantidad;
     private double precioUnitario;
     private double subtotal;
 
-    public ProductoVendido(int idProductoVendido, int idVenta, int idProducto, int cantidad, double precioUnitario, double subtotal) {
+    public ProductoVendido(long idProductoVendido, long idVenta, long idProducto, int cantidad, double precioUnitario, double subtotal) {
         this.idProductoVendido = idProductoVendido;
         this.idVenta = idVenta;
         this.idProducto = idProducto;
@@ -19,7 +19,7 @@ public class ProductoVendido {
     }
 
     // Constructor sin ID (para inserciones donde el ID se genera automáticamente)
-    public ProductoVendido(int idVenta, int idProducto, int cantidad, double precioUnitario, double subtotal) {
+    public ProductoVendido(long idVenta, long idProducto, int cantidad, double precioUnitario, double subtotal) {
         this.idVenta = idVenta;
         this.idProducto = idProducto;
         this.cantidad = cantidad;
@@ -27,27 +27,27 @@ public class ProductoVendido {
         this.subtotal = subtotal;
     }
 
-    public int getIdProductoVendido() {
+    public long getIdProductoVendido() {
         return idProductoVendido;
     }
 
-    public void setIdProductoVendido(int idProductoVendido) {
+    public void setIdProductoVendido(long idProductoVendido) {
         this.idProductoVendido = idProductoVendido;
     }
 
-    public int getIdVenta() {
+    public long getIdVenta() {
         return idVenta;
     }
 
-    public void setIdVenta(int idVenta) {
+    public void setIdVenta(long idVenta) {
         this.idVenta = idVenta;
     }
 
-    public int getIdProducto() {
+    public long getIdProducto() {
         return idProducto;
     }
 
-    public void setIdProducto(int idProducto) {
+    public void setIdProducto(long idProducto) {
         this.idProducto = idProducto;
     }
 

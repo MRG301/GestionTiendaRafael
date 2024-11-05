@@ -5,11 +5,11 @@ import java.util.List;
 
 public class Venta {
 
-    private int idVenta;
+    private long idVenta;
     private LocalDate fecha;
     private double total;
-    private int idVendedor; // Cambiado de idUsuario a idVendedor
-    private int idCliente;
+    private long idVendedor;
+    private long idCliente;
 
     private List<ProductoVendido> productosVendidos;
 
@@ -22,7 +22,7 @@ public class Venta {
         this.productosVendidos = productosVendidos;
     }
 
-    public Venta(Date fecha, double total, int idVendedor, int idCliente, List<ProductoVendido> productosVendidos) {
+    public Venta(LocalDate fecha, double total, long idVendedor, long idCliente, List<ProductoVendido> productosVendidos) {
         this.fecha = fecha;
         this.total = total;
         this.idVendedor = idVendedor;
@@ -30,19 +30,19 @@ public class Venta {
         this.productosVendidos = productosVendidos;
     }
 
-    public int getIdVenta() {
+    public long getIdVenta() {
         return idVenta;
     }
 
-    public void setIdVenta(int idVenta) {
+    public void setIdVenta(long idVenta) {
         this.idVenta = idVenta;
     }
 
-    public Date getFecha() {
+    public LocalDate getFecha() {
         return fecha;
     }
 
-    public void setFecha(Date fecha) {
+    public void setFecha(LocalDate fecha) {
         this.fecha = fecha;
     }
 
@@ -54,19 +54,19 @@ public class Venta {
         this.total = total;
     }
 
-    public int getIdVendedor() {
+    public long getIdVendedor() {
         return idVendedor;
     }
 
-    public void setIdVendedor(int idVendedor) {
+    public void setIdVendedor(long idVendedor) {
         this.idVendedor = idVendedor;
     }
 
-    public int getIdCliente() {
+    public long getIdCliente() {
         return idCliente;
     }
 
-    public void setIdCliente(int idCliente) {
+    public void setIdCliente(long idCliente) {
         this.idCliente = idCliente;
     }
 

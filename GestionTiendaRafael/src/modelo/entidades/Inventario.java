@@ -3,16 +3,16 @@ package modelo.entidades;
 public class Inventario {
 
     private int idInventario;
-    private int idProducto;
+    private long idProducto;
     private int stockActual;
 
-    public Inventario(int idInventario, int idProducto, int stockActual) {
+    public Inventario(int idInventario, long idProducto, int stockActual) {
         this.idInventario = idInventario;
         this.idProducto = idProducto;
         this.stockActual = stockActual;
     }
 
-    public Inventario(int idProducto, int stockActual) {
+    public Inventario(long idProducto, int stockActual) {
         this.idProducto = idProducto;
         this.stockActual = stockActual;
     }
@@ -25,11 +25,11 @@ public class Inventario {
         this.idInventario = idInventario;
     }
 
-    public int getIdProducto() {
+    public long getIdProducto() {
         return idProducto;
     }
 
-    public void setIdProducto(int idProducto) {
+    public void setIdProducto(long idProducto) {
         this.idProducto = idProducto;
     }
 

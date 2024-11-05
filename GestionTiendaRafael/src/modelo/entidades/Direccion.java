@@ -17,6 +17,14 @@ public class Direccion {
         this.codigoPostal = codigoPostal;
         this.estado = estado;
     }
+    
+    public Direccion(String calle, String numero, String ciudad, String codigoPostal, String estado) {
+        this.calle = calle;
+        this.numero = numero;
+        this.ciudad = ciudad;
+        this.codigoPostal = codigoPostal;
+        this.estado = estado;
+    }
 
     public int getIdDireccion() {
         return idDireccion;
