@@ -1,12 +1,13 @@
 package dao.implementacion;
 
+import dao.interfaces.DireccionDAO;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.entidades.Direccion;
 import util.ConexionBD;
 
-public class DireccionDAOImplementacion {
+public class DireccionDAOImplementacion implements DireccionDAO{
 
     private Connection conexion;
 

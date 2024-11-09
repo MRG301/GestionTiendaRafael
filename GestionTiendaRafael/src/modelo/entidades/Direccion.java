@@ -9,6 +9,9 @@ public class Direccion {
     private String codigoPostal;
     private String estado;
 
+    public Direccion() {
+    }
+
     public Direccion(int idDireccion, String calle, String numero, String ciudad, String codigoPostal, String estado) {
         this.idDireccion = idDireccion;
         this.calle = calle;
@@ -17,7 +20,7 @@ public class Direccion {
         this.codigoPostal = codigoPostal;
         this.estado = estado;
     }
-    
+
     public Direccion(String calle, String numero, String ciudad, String codigoPostal, String estado) {
         this.calle = calle;
         this.numero = numero;
