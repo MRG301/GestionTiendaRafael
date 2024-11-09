@@ -7,7 +7,7 @@ public class Empleado extends Persona {
     private RolEmpleado rol;
     private double salario;
 
-    public Empleado(RolEmpleado rol, double salario, int id, String nombre, String apellido, String email, String telefono, Direccion direccion) {
+    public Empleado(int id, String nombre, String apellido, String email, String telefono, Direccion direccion, RolEmpleado rol, double salario) {
         super(id, nombre, apellido, email, telefono, direccion);
         this.rol = rol;
         this.salario = salario;
@@ -76,5 +76,7 @@ public class Empleado extends Persona {
     public void setDireccion(Direccion direccion) {
         this.direccion = direccion;
     }
+
+   
 
 }

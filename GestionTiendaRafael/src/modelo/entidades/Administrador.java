@@ -7,8 +7,8 @@ public class Administrador extends Empleado {
 
     private TipoAdministrador tipoAdministrador;
 
-    public Administrador(TipoAdministrador tipoAdministrador, RolEmpleado rol, double salario, int id, String nombre, String apellido, String email, String telefono, Direccion direccion) {
-        super(rol, salario, id, nombre, apellido, email, telefono, direccion);
+    public Administrador(int id, String nombre, String apellido, String email, String telefono, Direccion direccion, RolEmpleado rol, double salario, TipoAdministrador tipoAdministrador) {
+        super(id, nombre, apellido, email, telefono, direccion, rol, salario);
         this.tipoAdministrador = tipoAdministrador;
     }
 

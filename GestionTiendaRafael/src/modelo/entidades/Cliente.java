@@ -4,7 +4,7 @@ public class Cliente extends Persona {
 
     private String tipoCliente;
 
-    public Cliente(String tipoCliente, int id, String nombre, String apellido, String email, String telefono, Direccion direccion) {
+    public Cliente(int id, String nombre, String apellido, String email, String telefono, Direccion direccion,String tipoCliente) {
         super(id, nombre, apellido, email, telefono, direccion);
         this.tipoCliente = tipoCliente;
     }
