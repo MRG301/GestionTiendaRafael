@@ -14,9 +14,10 @@ public class ClienteDAOImplementacion implements ClienteDAO {
     private Connection conexion;
     private DireccionDAO direccionDAO;
 
+    
     public ClienteDAOImplementacion() {
         this.conexion = ConexionBD.getInstance().getConexion();
-        this.direccionDAO = (DireccionDAO) new DireccionDAOImplementacion(); // Instanciar DireccionDAO
+        this.direccionDAO = (DireccionDAO) new DireccionDAOImplementacion(); // Asegúrate de tener esta implementación
     }
 
     @Override
@@ -26,32 +27,28 @@ public class ClienteDAOImplementacion implements ClienteDAO {
         if (direccion.getIdDireccion() == 0) { // Asumiendo que 0 indica que no ha sido agregado
             boolean direccionAgregada = direccionDAO.agregarDireccion(direccion);
             if (!direccionAgregada) {
+                System.err.println("Error al agregar dirección para el cliente: " + cliente.getNombre());
                 return false;
             }
         }
 
-        String sql = "INSERT INTO cliente (nombre, apellido, email, telefono, id_direccion, tipo_cliente) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "INSERT INTO cliente (nombre, apellido, email, telefono, id_direccion, tipo_cliente) VALUES (?, ?, ?, ?, ?, ?) RETURNING id_cliente";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, cliente.getNombre());
             ps.setString(2, cliente.getApellido());
             ps.setString(3, cliente.getEmail());
             ps.setString(4, cliente.getTelefono());
             ps.setInt(5, cliente.getDireccion().getIdDireccion());
             ps.setString(6, cliente.getTipoCliente());
-            int filasAfectadas = ps.executeUpdate();
-            if (filasAfectadas == 0) {
-                throw new SQLException("Agregar cliente falló, ninguna fila afectada.");
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int idCliente = rs.getInt(1);
+                cliente.setId(idCliente);
+                return true;
             }
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    cliente.setId((int) generatedKeys.getLong(1));
-                } else {
-                    throw new SQLException("Agregar cliente falló, no se obtuvo el ID.");
-                }
-            }
-            return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al agregar cliente: " + e.getMessage());
         }
         return false;
     }
@@ -62,6 +59,7 @@ public class ClienteDAOImplementacion implements ClienteDAO {
         Direccion direccion = cliente.getDireccion();
         boolean direccionActualizada = direccionDAO.actualizarDireccion(direccion);
         if (!direccionActualizada) {
+            System.err.println("Error al actualizar dirección para el cliente: " + cliente.getNombre());
             return false;
         }
 
@@ -73,42 +71,39 @@ public class ClienteDAOImplementacion implements ClienteDAO {
             ps.setString(4, cliente.getTelefono());
             ps.setInt(5, cliente.getDireccion().getIdDireccion());
             ps.setString(6, cliente.getTipoCliente());
-            ps.setLong(7, cliente.getId());
+            ps.setInt(7, cliente.getId());
+
             int filasAfectadas = ps.executeUpdate();
             return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al actualizar cliente: " + e.getMessage());
         }
         return false;
     }
 
     @Override
-    public boolean eliminarCliente(long idCliente) {
+    public boolean eliminarCliente(int idCliente) {
         String sql = "DELETE FROM cliente WHERE id_cliente = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setLong(1, idCliente);
+            ps.setInt(1, idCliente);
             int filasAfectadas = ps.executeUpdate();
-            if (filasAfectadas > 0) {
-                // Opcional: Eliminar la dirección si ya no está asociada a otros clientes o empleados
-                // Esto requiere lógica adicional para verificar asociaciones
-                return true;
-            }
+            return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al eliminar cliente: " + e.getMessage());
         }
         return false;
     }
 
     @Override
-    public Cliente obtenerClientePorId(long idCliente) {
+    public Cliente obtenerClientePorId(int idCliente) {
         String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setLong(1, idCliente);
+            ps.setInt(1, idCliente);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Direccion direccion = direccionDAO.obtenerDireccionPorId(rs.getInt("id_direccion"));
                     return new Cliente(
-                            rs.getLong("id_cliente"),
+                            rs.getInt("id_cliente"),
                             rs.getString("nombre"),
                             rs.getString("apellido"),
                             rs.getString("email"),
@@ -119,7 +114,7 @@ public class ClienteDAOImplementacion implements ClienteDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al obtener cliente por ID: " + e.getMessage());
         }
         return null;
     }
@@ -132,7 +127,7 @@ public class ClienteDAOImplementacion implements ClienteDAO {
             while (rs.next()) {
                 Direccion direccion = direccionDAO.obtenerDireccionPorId(rs.getInt("id_direccion"));
                 Cliente cliente = new Cliente(
-                        rs.getLong("id_cliente"),
+                        rs.getInt("id_cliente"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
                         rs.getString("email"),
@@ -143,7 +138,7 @@ public class ClienteDAOImplementacion implements ClienteDAO {
                 clientes.add(cliente);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al obtener todos los clientes: " + e.getMessage());
         }
         return clientes;
     }
@@ -158,7 +153,7 @@ public class ClienteDAOImplementacion implements ClienteDAO {
                 while (rs.next()) {
                     Direccion direccion = direccionDAO.obtenerDireccionPorId(rs.getInt("id_direccion"));
                     Cliente cliente = new Cliente(
-                            rs.getLong("id_cliente"),
+                            rs.getInt("id_cliente"),
                             rs.getString("nombre"),
                             rs.getString("apellido"),
                             rs.getString("email"),
@@ -170,7 +165,7 @@ public class ClienteDAOImplementacion implements ClienteDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al obtener clientes por tipo: " + e.getMessage());
         }
         return clientes;
     }

@@ -1,26 +1,38 @@
-
 package dao.implementacion;
 
+import dao.interfaces.DireccionDAO;
 import java.sql.*;
 import dao.interfaces.EmpleadoDAO;
 import java.util.ArrayList;
 import java.util.List;
+import modelo.entidades.Direccion;
 import modelo.entidades.Empleado;
 import modelo.enums.RolEmpleado;
 import util.ConexionBD;
 
-
 public class EmpleadoDAOImplementacion implements EmpleadoDAO {
+
     private Connection conexion;
+    private DireccionDAO direccionDAO;
 
     public EmpleadoDAOImplementacion() {
         this.conexion = ConexionBD.getInstance().getConexion();
+        this.direccionDAO = (DireccionDAO) new DireccionDAOImplementacion();
     }
 
     @Override
     public boolean agregarEmpleado(Empleado empleado) {
-        String sql = "INSERT INTO empleado (nombre, apellido, email, telefono, id_direccion, rol, salario) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        // Primero, agregar la dirección si no existe
+        Direccion direccion = empleado.getDireccion();
+        if (direccion.getIdDireccion() == 0) { // Asumiendo que 0 indica que no ha sido agregado
+            boolean direccionAgregada = direccionDAO.agregarDireccion(direccion);
+            if (!direccionAgregada) {
+                return false;
+            }
+        }
+
+        String sql = "INSERT INTO empleado (nombre, apellido, email, telefono, id_direccion, rol, salario) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id_empleado";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, empleado.getNombre());
             ps.setString(2, empleado.getApellido());
             ps.setString(3, empleado.getEmail());
@@ -28,18 +40,13 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
             ps.setInt(5, empleado.getDireccion().getIdDireccion());
             ps.setString(6, empleado.getRol().name());
             ps.setDouble(7, empleado.getSalario());
-            int filasAfectadas = ps.executeUpdate();
-            if (filasAfectadas == 0) {
-                throw new SQLException("Agregar empleado falló, ninguna fila afectada.");
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int idEmpleado = rs.getInt(1);
+                empleado.setId(idEmpleado);
+                return true;
             }
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    empleado.setId(generatedKeys.getInt(1));
-                } else {
-                    throw new SQLException("Agregar empleado falló, no se obtuvo el ID.");
-                }
-            }
-            return true;
         } catch (SQLException e) {
             e.printStackTrace(); // Considera usar un sistema de logging
         }
@@ -48,6 +55,13 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
 
     @Override
     public boolean actualizarEmpleado(Empleado empleado) {
+        // Primero, actualizar la dirección
+        Direccion direccion = empleado.getDireccion();
+        boolean direccionActualizada = direccionDAO.actualizarDireccion(direccion);
+        if (!direccionActualizada) {
+            return false;
+        }
+
         String sql = "UPDATE empleado SET nombre = ?, apellido = ?, email = ?, telefono = ?, id_direccion = ?, rol = ?, salario = ? WHERE id_empleado = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, empleado.getNombre());
@@ -57,7 +71,8 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
             ps.setInt(5, empleado.getDireccion().getIdDireccion());
             ps.setString(6, empleado.getRol().name());
             ps.setDouble(7, empleado.getSalario());
-            ps.setLong(8, empleado.getId());
+            ps.setInt(8, empleado.getId());
+
             int filasAfectadas = ps.executeUpdate();
             return filasAfectadas > 0;
         } catch (SQLException e) {
@@ -67,10 +82,10 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
     }
 
     @Override
-    public boolean eliminarEmpleado(long idEmpleado) {
+    public boolean eliminarEmpleado(int idEmpleado) {
         String sql = "DELETE FROM empleado WHERE id_empleado = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setLong(1, idEmpleado);
+            ps.setInt(1, idEmpleado);
             int filasAfectadas = ps.executeUpdate();
             return filasAfectadas > 0;
         } catch (SQLException e) {
@@ -80,23 +95,23 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
     }
 
     @Override
-    public Empleado obtenerEmpleadoPorId(long idEmpleado) {
+    public Empleado obtenerEmpleadoPorId(int idEmpleado) {
         String sql = "SELECT * FROM empleado WHERE id_empleado = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setLong(1, idEmpleado);
+            ps.setInt(1, idEmpleado);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    Direccion direccion = direccionDAO.obtenerDireccionPorId(rs.getInt("id_direccion"));
                     Empleado empleado = new Empleado(
                             rs.getInt("id_empleado"),
                             rs.getString("nombre"),
                             rs.getString("apellido"),
                             rs.getString("email"),
                             rs.getString("telefono"),
-                            null, // Deberás obtener la dirección por separado si es necesario
+                            direccion,
                             RolEmpleado.valueOf(rs.getString("rol")),
                             rs.getDouble("salario")
                     );
-                    // Aquí podrías agregar lógica para obtener y asignar la dirección si es necesario
                     return empleado;
                 }
             }
@@ -110,20 +125,19 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
     public List<Empleado> obtenerTodosLosEmpleados() {
         List<Empleado> empleados = new ArrayList<>();
         String sql = "SELECT * FROM empleado";
-        try (Statement stmt = conexion.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
+                Direccion direccion = direccionDAO.obtenerDireccionPorId(rs.getInt("id_direccion"));
                 Empleado empleado = new Empleado(
                         rs.getInt("id_empleado"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
                         rs.getString("email"),
                         rs.getString("telefono"),
-                        null, // Obtener y asignar la dirección si es necesario
+                        direccion,
                         RolEmpleado.valueOf(rs.getString("rol")),
                         rs.getDouble("salario")
                 );
-                // Lógica para obtener y asignar la dirección
                 empleados.add(empleado);
             }
         } catch (SQLException e) {
@@ -140,17 +154,17 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
             ps.setString(1, rol.name());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+                    Direccion direccion = direccionDAO.obtenerDireccionPorId(rs.getInt("id_direccion"));
                     Empleado empleado = new Empleado(
                             rs.getInt("id_empleado"),
                             rs.getString("nombre"),
                             rs.getString("apellido"),
                             rs.getString("email"),
                             rs.getString("telefono"),
-                            null, // Obtener y asignar la dirección si es necesario
+                            direccion,
                             RolEmpleado.valueOf(rs.getString("rol")),
                             rs.getDouble("salario")
                     );
-                    // Lógica para obtener y asignar la dirección
                     empleados.add(empleado);
                 }
             }

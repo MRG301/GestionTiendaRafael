@@ -127,7 +127,7 @@ public class AdministradorDAOImplementacion implements AdministradorDAO {
     }
 
     @Override
-    public boolean eliminarAdministrador(long idAdministrador) {
+    public boolean eliminarAdministrador(int idAdministrador) {
         String sqlEliminarAdministrador = "DELETE FROM administrador WHERE id_administrador = ?";
         String sqlEliminarEmpleado = "DELETE FROM empleado WHERE id_empleado = ?";
         try {
@@ -169,7 +169,7 @@ public class AdministradorDAOImplementacion implements AdministradorDAO {
     }
 
     @Override
-    public Administrador obtenerAdministradorPorId(long idAdministrador) {
+    public Administrador obtenerAdministradorPorId(int idAdministrador) {
         String sql = "SELECT e.*, a.tipo_administrador FROM empleado e JOIN administrador a ON e.id_empleado = a.id_empleado WHERE a.id_administrador = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setLong(1, idAdministrador);
@@ -180,7 +180,7 @@ public class AdministradorDAOImplementacion implements AdministradorDAO {
                             "", "", "", "", "" // Obtener dirección completa si es necesario
                     );
                     return new Administrador(
-                            (int) rs.getLong("id_empleado"),
+                            (int) rs.getInt("id_empleado"),
                             rs.getString("nombre"),
                             rs.getString("apellido"),
                             rs.getString("email"),
@@ -209,7 +209,7 @@ public class AdministradorDAOImplementacion implements AdministradorDAO {
                         "", "", "", "", "" // Obtener dirección completa si es necesario
                 );
                 Administrador administrador = new Administrador(
-                        (int) rs.getLong("id_empleado"),
+                        (int) rs.getInt("id_empleado"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
                         rs.getString("email"),
