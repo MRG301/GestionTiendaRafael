@@ -29,9 +29,9 @@ public class FormularioEmp extends javax.swing.JPanel {
     }
 
     private void cargarPuestos() {
-        cmbPuesto.removeAllItems(); // Limpia el ComboBox antes de cargar
+        cmbPuesto.removeAllItems();
         for (RolEmpleado rol : RolEmpleado.values()) {
-            cmbPuesto.addItem(rol.toString());
+            cmbPuesto.addItem(rol); // Agregar el enum directamente sin convertir a String
         }
     }
 
@@ -88,7 +88,6 @@ public class FormularioEmp extends javax.swing.JPanel {
 
         jLabel9.setText("Ciudad");
 
-        cmbPuesto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cmbPuesto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbPuestoActionPerformed(evt);
@@ -259,6 +258,9 @@ public class FormularioEmp extends javax.swing.JPanel {
         cmbPuesto.setSelectedItem(empleado.getRol());
     }
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+
+        RolEmpleado rolSeleccionado = (RolEmpleado) cmbPuesto.getSelectedItem();
+
         if (txtNombreEmp.getText().trim().isEmpty()
                 || txtApellidoEmp.getText().trim().isEmpty()
                 || txtEmailEmp.getText().trim().isEmpty()
@@ -300,7 +302,7 @@ public class FormularioEmp extends javax.swing.JPanel {
                     txtEmailEmp.getText().trim(),
                     txtTelefonoEmp.getText().trim(),
                     direccion,
-                    (RolEmpleado) cmbPuesto.getSelectedItem(),
+                    rolSeleccionado, // Asignación del rol
                     salario
             );
 
@@ -308,7 +310,6 @@ public class FormularioEmp extends javax.swing.JPanel {
             if (creado) {
                 JOptionPane.showMessageDialog(this, "Empleado agregado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 gestionEmpleados.cargarDatosTabla(); // Refrescar la tabla en la vista principal
-                //dispose(); // Cerrar el formulario
             } else {
                 JOptionPane.showMessageDialog(this, "Error al agregar el empleado.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -324,15 +325,13 @@ public class FormularioEmp extends javax.swing.JPanel {
             empleado.setApellido(txtApellidoEmp.getText().trim());
             empleado.setEmail(txtEmailEmp.getText().trim());
             empleado.setTelefono(txtTelefonoEmp.getText().trim());
-            empleado.setRol((RolEmpleado) cmbPuesto.getSelectedItem());
+            empleado.setRol(rolSeleccionado); // Asignación del rol
             empleado.setSalario(salario);
 
             boolean actualizado = empleadoDAO.actualizarEmpleado(empleado);
             if (actualizado) {
                 JOptionPane.showMessageDialog(this, "Empleado actualizado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 gestionEmpleados.cargarDatosTabla(); // Refrescar la tabla en la vista principal
-                //dispose(); // Cerrar el formulario
-                int CANCEL_OPTION = JOptionPane.CANCEL_OPTION;
             } else {
                 JOptionPane.showMessageDialog(this, "Error al actualizar el empleado.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -343,11 +342,10 @@ public class FormularioEmp extends javax.swing.JPanel {
 
     }//GEN-LAST:event_cmbPuestoActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancelar;
     private javax.swing.JButton btnGuardar;
-    private javax.swing.JComboBox<String> cmbPuesto;
+    private javax.swing.JComboBox<RolEmpleado> cmbPuesto;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
