@@ -2,8 +2,10 @@ package vista;
 
 import dao.implementacion.EmpleadoDAOImplementacion;
 import java.util.List;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import modelo.entidades.Empleado;
 
@@ -130,8 +132,13 @@ public class GestionEmpleados extends javax.swing.JFrame {
             int idEmpleado = (int) tblTablaEmp.getValueAt(filaSeleccionada, 0);
             Empleado empleado = empleadoDAO.obtenerEmpleadoPorId(idEmpleado);
             if (empleado != null) {
-                FormularioEmp formularioEmp = new FormularioEmp(GestionEmpleados.this, empleado);
-                formularioEmp.setVisible(true);
+                // Crear un JDialog para mostrar el FormularioEmp
+                JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Editar Empleado", true);
+                FormularioEmp formularioEmp = new FormularioEmp(this, empleado);
+                dialog.add(formularioEmp);
+                dialog.pack();
+                dialog.setLocationRelativeTo(this);
+                dialog.setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(null, "No se pudo encontrar el empleado seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -169,13 +176,13 @@ public class GestionEmpleados extends javax.swing.JFrame {
 
     private void btnAgregarEmpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarEmpActionPerformed
 
-       JFrame frame = new JFrame("Agregar Empleado");
-    FormularioEmp formularioEmpleado = new FormularioEmp(GestionEmpleados.this, null);
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    frame.getContentPane().add(formularioEmpleado); // Agregar FormularioEmp al contenido del JFrame
-    frame.pack();
-    frame.setLocationRelativeTo(null); // Centrar la ventana
-    frame.setVisible(true);
+        JFrame frame = new JFrame("Agregar Empleado");
+        FormularioEmp formularioEmpleado = new FormularioEmp(GestionEmpleados.this, null);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.getContentPane().add(formularioEmpleado); // Agregar FormularioEmp al contenido del JFrame
+        frame.pack();
+        frame.setLocationRelativeTo(null); // Centrar la ventana
+        frame.setVisible(true);
     }//GEN-LAST:event_btnAgregarEmpActionPerformed
 
     public static void main(String args[]) {
