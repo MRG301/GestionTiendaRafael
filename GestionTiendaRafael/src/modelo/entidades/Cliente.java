@@ -1,20 +1,28 @@
 package modelo.entidades;
 
-public class Cliente extends Persona {
+import java.time.LocalDate;
+import modelo.enums.TipoCliente;
 
-    private String tipoCliente;
+public class Cliente {
 
-    public Cliente(int id, String nombre, String apellido, String email, String telefono, Direccion direccion,String tipoCliente) {
-        super(id, nombre, apellido, email, telefono, direccion);
+    private int id;
+    private Persona datosPersonales;
+    private TipoCliente tipoCliente;
+    private LocalDate fechaUltimaActualizacionTipo;
+
+    // Constructor completo
+    public Cliente(int id, Persona datosPersonales, TipoCliente tipoCliente, LocalDate fechaUltimaActualizacionTipo) {
+        this.id = id;
+        this.datosPersonales = datosPersonales;
         this.tipoCliente = tipoCliente;
+        this.fechaUltimaActualizacionTipo = fechaUltimaActualizacionTipo;
     }
 
-    public String getTipoCliente() {
-        return tipoCliente;
-    }
-
-    public void setTipoCliente(String tipoCliente) {
+    // Constructor sin ID (para inserciones)
+    public Cliente(Persona datosPersonales, TipoCliente tipoCliente, LocalDate fechaUltimaActualizacionTipo) {
+        this.datosPersonales = datosPersonales;
         this.tipoCliente = tipoCliente;
+        this.fechaUltimaActualizacionTipo = fechaUltimaActualizacionTipo;
     }
 
     public int getId() {
@@ -25,44 +33,28 @@ public class Cliente extends Persona {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public Persona getDatosPersonales() {
+        return datosPersonales;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setDatosPersonales(Persona datosPersonales) {
+        this.datosPersonales = datosPersonales;
     }
 
-    public String getApellido() {
-        return apellido;
+    public TipoCliente getTipoCliente() {
+        return tipoCliente;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setTipoCliente(TipoCliente tipoCliente) {
+        this.tipoCliente = tipoCliente;
     }
 
-    public String getEmail() {
-        return email;
+    public LocalDate getFechaUltimaActualizacionTipo() {
+        return fechaUltimaActualizacionTipo;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public Direccion getDireccion() {
-        return direccion;
-    }
-
-    public void setDireccion(Direccion direccion) {
-        this.direccion = direccion;
+    public void setFechaUltimaActualizacionTipo(LocalDate fechaUltimaActualizacionTipo) {
+        this.fechaUltimaActualizacionTipo = fechaUltimaActualizacionTipo;
     }
 
 }

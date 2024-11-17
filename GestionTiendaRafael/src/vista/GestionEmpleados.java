@@ -1,23 +1,76 @@
 package vista;
 
 import dao.implementacion.EmpleadoDAOImplementacion;
+import dao.implementacion.UsuarioDAOImplementacion;
+import dao.interfaces.UsuarioDAO;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import modelo.entidades.Direccion;
 import modelo.entidades.Empleado;
+import modelo.entidades.Persona;
+import util.Sesion;
+import modelo.entidades.Usuario;
+import modelo.enums.Rol;
 
 public class GestionEmpleados extends javax.swing.JFrame {
 
     private EmpleadoDAOImplementacion empleadoDAO;
+    private Usuario usuarioActual;
+    private UsuarioDAO usuarioDAO;
 
     public GestionEmpleados() {
+        // Obtener el usuario actual de la sesión
+        usuarioActual = Sesion.getUsuarioActual();
+        this.usuarioDAO = new UsuarioDAOImplementacion();
+
+        // Verificar permisos
+        if (usuarioActual == null
+                || (!usuarioActual.getRoles().contains(Rol.GESTIONEMPLEADOS)
+                && !usuarioActual.getRoles().contains(Rol.SUPERADMIN))) {
+            JOptionPane.showMessageDialog(this,
+                    "No tienes permisos para acceder a esta vista.",
+                    "Acceso Denegado",
+                    JOptionPane.ERROR_MESSAGE);
+            dispose(); // Cerrar la ventana actual
+            return;
+        }
 
         empleadoDAO = new EmpleadoDAOImplementacion();
         initComponents();
+        setLocationRelativeTo(null);
+        setTitle("Gestión de Empleados - " + usuarioActual.getUsername());
         cargarDatosTabla();
+
+        // Añadir listener al campo de búsqueda
+        txtBuscarEmpleado.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                buscarEmpleado();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                buscarEmpleado();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                buscarEmpleado();
+            }
+        });
+
+        // Añadir listener al botón Regresar
+        btnRegresar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegresarActionPerformed(evt);
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -28,10 +81,12 @@ public class GestionEmpleados extends javax.swing.JFrame {
         btnAgregarEmp = new javax.swing.JButton();
         btnEditarEmp = new javax.swing.JButton();
         btnEliminarEmp = new javax.swing.JButton();
-        btnActualizarEmp = new javax.swing.JButton();
         btnCancelarEmp = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblTablaEmp = new javax.swing.JTable();
+        btnRegresar = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        txtBuscarEmpleado = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -58,13 +113,6 @@ public class GestionEmpleados extends javax.swing.JFrame {
             }
         });
 
-        btnActualizarEmp.setText("Actualizar");
-        btnActualizarEmp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnActualizarEmpActionPerformed(evt);
-            }
-        });
-
         btnCancelarEmp.setText("Cancelar");
         btnCancelarEmp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -82,45 +130,72 @@ public class GestionEmpleados extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(tblTablaEmp);
 
+        btnRegresar.setText("Regresar");
+        btnRegresar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegresarActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Buscar Empleado:");
+
+        txtBuscarEmpleado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscarEmpleadoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnAgregarEmp)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnEditarEmp)
-                        .addGap(33, 33, 33)
-                        .addComponent(btnCancelarEmp)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnEliminarEmp)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnActualizarEmp)))
-                .addGap(20, 20, 20))
             .addGroup(layout.createSequentialGroup()
-                .addGap(191, 191, 191)
-                .addComponent(jLabel1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(btnAgregarEmp)
+                .addGap(18, 18, 18)
+                .addComponent(btnEditarEmp)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnCancelarEmp)
+                .addGap(18, 18, 18)
+                .addComponent(btnEliminarEmp)
+                .addGap(21, 21, 21))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(204, 204, 204)
+                        .addComponent(btnRegresar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtBuscarEmpleado, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 469, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(179, 179, 179)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(20, 20, 20)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel1)
-                .addGap(27, 27, 27)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtBuscarEmpleado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAgregarEmp)
                     .addComponent(btnEditarEmp)
-                    .addComponent(btnEliminarEmp)
-                    .addComponent(btnActualizarEmp)
-                    .addComponent(btnCancelarEmp))
-                .addContainerGap(67, Short.MAX_VALUE))
+                    .addComponent(btnCancelarEmp)
+                    .addComponent(btnEliminarEmp))
+                .addGap(18, 18, 18)
+                .addComponent(btnRegresar)
+                .addGap(34, 34, 34))
         );
 
         pack();
@@ -130,20 +205,23 @@ public class GestionEmpleados extends javax.swing.JFrame {
         int filaSeleccionada = tblTablaEmp.getSelectedRow();
         if (filaSeleccionada != -1) {
             int idEmpleado = (int) tblTablaEmp.getValueAt(filaSeleccionada, 0);
-            Empleado empleado = empleadoDAO.obtenerEmpleadoPorId(idEmpleado);
-            if (empleado != null) {
-                // Crear un JDialog para mostrar el FormularioEmp
-                JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Editar Empleado", true);
-                FormularioEmp formularioEmp = new FormularioEmp(this, empleado);
-                dialog.add(formularioEmp);
-                dialog.pack();
-                dialog.setLocationRelativeTo(this);
-                dialog.setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(null, "No se pudo encontrar el empleado seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+            try {
+                Empleado empleado = empleadoDAO.obtenerEmpleadoPorId(idEmpleado);
+                if (empleado != null) {
+                    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Editar Empleado", true);
+                    FormularioEmp formularioEmp = new FormularioEmp(this, empleado);
+                    dialog.add(formularioEmp);
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(this);
+                    dialog.setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo encontrar el empleado seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al obtener el empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Por favor, selecciona un empleado para editar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un empleado para editar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_btnEditarEmpActionPerformed
 
@@ -151,22 +229,18 @@ public class GestionEmpleados extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnCancelarEmpActionPerformed
 
-    private void btnActualizarEmpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarEmpActionPerformed
-        cargarDatosTabla();
-    }//GEN-LAST:event_btnActualizarEmpActionPerformed
-
     private void btnEliminarEmpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarEmpActionPerformed
         int filaSeleccionada = tblTablaEmp.getSelectedRow();
         if (filaSeleccionada != -1) {
             int idEmpleado = (int) tblTablaEmp.getValueAt(filaSeleccionada, 0);
             int confirm = JOptionPane.showConfirmDialog(null, "¿Estás seguro de que deseas eliminar este empleado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean eliminado = empleadoDAO.eliminarEmpleado(idEmpleado);
-                if (eliminado) {
+                try {
+                    empleadoDAO.eliminarEmpleado(idEmpleado);
                     JOptionPane.showMessageDialog(null, "Empleado eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                     cargarDatosTabla();
-                } else {
-                    JOptionPane.showMessageDialog(null, "Error al eliminar el empleado.", "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Error al eliminar el empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else {
@@ -185,51 +259,114 @@ public class GestionEmpleados extends javax.swing.JFrame {
         frame.setVisible(true);
     }//GEN-LAST:event_btnAgregarEmpActionPerformed
 
+    private void txtBuscarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarEmpleadoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtBuscarEmpleadoActionPerformed
+
+    private void btnRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegresarActionPerformed
+
+        // Abrir AdministracionVista
+        SwingUtilities.invokeLater(() -> {
+            new AdministracionVista().setVisible(true);
+        });
+        // Cerrar la ventana actual
+        this.dispose();
+    }//GEN-LAST:event_btnRegresarActionPerformed
+
     public static void main(String args[]) {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                GestionEmpleados gestionEmpleados = new GestionEmpleados();
                 new GestionEmpleados().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnActualizarEmp;
     private javax.swing.JButton btnAgregarEmp;
     private javax.swing.JButton btnCancelarEmp;
     private javax.swing.JButton btnEditarEmp;
     private javax.swing.JButton btnEliminarEmp;
+    private javax.swing.JButton btnRegresar;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tblTablaEmp;
+    private javax.swing.JTextField txtBuscarEmpleado;
     // End of variables declaration//GEN-END:variables
 
     public void cargarDatosTabla() {
-        // Obtener el modelo de la tabla
         DefaultTableModel model = (DefaultTableModel) tblTablaEmp.getModel();
-
-        // Limpiar el modelo de la tabla
         model.setRowCount(0);
 
-        // Obtener la lista de empleados desde el DAO
-        List<Empleado> empleados = empleadoDAO.obtenerTodosLosEmpleados();
-
-        // Agregar cada empleado al modelo de la tabla
-        for (Empleado empleado : empleados) {
-            Object[] fila = new Object[8];
-            fila[0] = empleado.getId();
-            fila[1] = empleado.getNombre();
-            fila[2] = empleado.getApellido();
-            fila[3] = empleado.getEmail();
-            fila[4] = empleado.getTelefono();
-            fila[5] = empleado.getDireccion().getCalle() + " " + empleado.getDireccion().getNumero() + ", "
-                    + empleado.getDireccion().getCiudad() + ", " + empleado.getDireccion().getCodigoPostal() + ", "
-                    + empleado.getDireccion().getEstado();
-            fila[6] = empleado.getRol();
-            fila[7] = empleado.getSalario();
-            model.addRow(fila);
+        try {
+            List<Empleado> empleados = empleadoDAO.obtenerTodosLosEmpleados();
+            for (Empleado empleado : empleados) {
+                Persona persona = empleado.getDatosPersonales();
+                Direccion direccion = persona.getDireccion();
+                Usuario usuario = empleado.getUsuario();
+                Object[] fila = {
+                    empleado.getId(),
+                    persona.getNombre(),
+                    persona.getApellido(),
+                    persona.getEmail(),
+                    persona.getTelefono(),
+                    direccion.getCalle() + " " + direccion.getNumero() + ", " + direccion.getCiudad() + ", " + direccion.getCodigoPostal() + ", " + direccion.getEstado(),
+                    empleado.getPuesto(),
+                    empleado.getSalario(),
+                    usuario.getUsername() // Incluye el nombre de usuario si lo deseas
+                };
+                model.addRow(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar los datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void buscarEmpleado() {
+        String termino = txtBuscarEmpleado.getText().trim();
+        if (termino.isEmpty()) {
+            cargarDatosTabla(); // Cargar todos los empleados si el término está vacío
+            return;
+        }
+
+        DefaultTableModel model = (DefaultTableModel) tblTablaEmp.getModel();
+        model.setRowCount(0); // Limpiar la tabla
+
+        try {
+            List<Empleado> empleados;
+            if (esNumero(termino)) {
+                empleados = empleadoDAO.buscarEmpleadosPorId(Integer.parseInt(termino));
+            } else {
+                empleados = empleadoDAO.buscarEmpleadosPorNombre(termino);
+            }
+
+            for (Empleado empleado : empleados) {
+                Persona persona = empleado.getDatosPersonales();
+                Direccion direccion = persona.getDireccion();
+                Object[] fila = {
+                    empleado.getId(),
+                    persona.getNombre(),
+                    persona.getApellido(),
+                    persona.getEmail(),
+                    persona.getTelefono(),
+                    direccion.getCalle() + " " + direccion.getNumero() + ", " + direccion.getCiudad() + ", " + direccion.getCodigoPostal() + ", " + direccion.getEstado(),
+                    empleado.getPuesto(),
+                    empleado.getSalario(),};
+                model.addRow(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al buscar empleados: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private boolean esNumero(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 }

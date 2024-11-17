@@ -4,15 +4,28 @@ import modelo.entidades.Direccion;
 
 public class Persona {
 
-    protected int id;
-    protected String nombre;
-    protected String apellido;
-    protected String email;
-    protected String telefono;
-    protected Direccion direccion;
+    private int id;
+    private String nombre;
+    private String apellido;
+    private String email;
+    private String telefono;
+    private Direccion direccion;
 
+    public Persona() {
+    }
+
+    // Constructor completo
     public Persona(int id, String nombre, String apellido, String email, String telefono, Direccion direccion) {
         this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.telefono = telefono;
+        this.direccion = direccion;
+    }
+
+    // Constructor sin ID (para inserciones)
+    public Persona(String nombre, String apellido, String email, String telefono, Direccion direccion) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;

@@ -1,15 +1,15 @@
-
 package dao.interfaces;
 
 import java.util.List;
 import modelo.entidades.Empleado;
-import modelo.enums.RolEmpleado;
 
 public interface EmpleadoDAO {
-    boolean agregarEmpleado(Empleado empleado);
-    boolean actualizarEmpleado(Empleado empleado);
-    boolean eliminarEmpleado(int idEmpleado);
-    Empleado obtenerEmpleadoPorId(int idEmpleado);
-    List<Empleado> obtenerTodosLosEmpleados();
-    List<Empleado> obtenerEmpleadosPorRol(RolEmpleado rol);
+
+    void agregarEmpleado(Empleado empleado) throws Exception;
+    Empleado obtenerEmpleadoPorId(int id) throws Exception;  //revisar
+    List<Empleado> obtenerTodosLosEmpleados() throws Exception;
+    void actualizarEmpleado(Empleado empleado) throws Exception;
+    void eliminarEmpleado(int id) throws Exception;
+    List<Empleado> buscarEmpleadosPorId(int id) throws Exception;
+    List<Empleado> buscarEmpleadosPorNombre(String nombre) throws Exception;
 }

@@ -1,32 +1,36 @@
 package modelo.entidades;
 
-import modelo.enums.RolEmpleado;
+import modelo.enums.Rol;
 
-public class Empleado extends Persona {
+public class Empleado {
 
-    private RolEmpleado rol;
+    private int id;
+    private Persona datosPersonales;
+    private String puesto;
     private double salario;
+    private Rol rol;
+    private Usuario usuario;
 
-    public Empleado(int id, String nombre, String apellido, String email, String telefono, Direccion direccion, RolEmpleado rol, double salario) {
-        super(id, nombre, apellido, email, telefono, direccion);
-        this.rol = rol;
+    public Empleado() {
+    }
+
+    // Constructor completo
+    public Empleado(int id, Persona datosPersonales, String puesto, double salario, Rol rol, Usuario usuario) {
+        this.id = id;
+        this.datosPersonales = datosPersonales;
+        this.puesto = puesto;
         this.salario = salario;
-    }
-
-    public RolEmpleado getRol() {
-        return rol;
-    }
-
-    public void setRol(RolEmpleado rol) {
         this.rol = rol;
+        this.usuario = usuario;
     }
 
-    public double getSalario() {
-        return salario;
-    }
-
-    public void setSalario(double salario) {
+    // Constructor sin ID (para inserciones)
+    public Empleado(Persona datosPersonales, String puesto, double salario, Rol rol, Usuario usuario) {
+        this.datosPersonales = datosPersonales;
+        this.puesto = puesto;
         this.salario = salario;
+        this.rol = rol;
+        this.usuario = usuario;
     }
 
     public int getId() {
@@ -37,46 +41,44 @@ public class Empleado extends Persona {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public Persona getDatosPersonales() {
+        return datosPersonales;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setDatosPersonales(Persona datosPersonales) {
+        this.datosPersonales = datosPersonales;
     }
 
-    public String getApellido() {
-        return apellido;
+    public String getPuesto() {
+        return puesto;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setPuesto(String puesto) {
+        this.puesto = puesto;
     }
 
-    public String getEmail() {
-        return email;
+    public double getSalario() {
+        return salario;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setSalario(double salario) {
+        this.salario = salario;
     }
 
-    public String getTelefono() {
-        return telefono;
+    public Rol getRol() {
+        return rol;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
+    public void setRol(Rol rol) {
+        this.rol = rol;
     }
 
-    public Direccion getDireccion() {
-        return direccion;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setDireccion(Direccion direccion) {
-        this.direccion = direccion;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
-
-   
 
 }

@@ -5,9 +5,10 @@ import java.util.List;
 import modelo.entidades.Direccion;
 
 public interface DireccionDAO {
-    boolean agregarDireccion(Direccion direccion);
-    boolean actualizarDireccion(Direccion direccion);
-    boolean eliminarDireccion(int idDireccion);
-    Direccion obtenerDireccionPorId(int idDireccion);
-    List<Direccion> obtenerTodasLasDirecciones();
+    void agregarDireccion(Direccion direccion) throws Exception;
+    boolean actualizarDireccion(Direccion direccion) throws Exception;
+    boolean eliminarDireccion(int idDireccion) throws Exception;
+    Direccion obtenerDireccionPorId(int idDireccion) throws Exception;
+    List<Direccion> obtenerTodasLasDirecciones() throws Exception;
+
 }

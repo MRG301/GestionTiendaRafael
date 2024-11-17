@@ -24,10 +24,8 @@ public class ConexionBD {
             System.out.println("Conexión exitosa a la base de datos.");
         } catch (ClassNotFoundException e) {
             System.err.println("Driver de PostgreSQL no encontrado.");
-            e.printStackTrace();
         } catch (SQLException e) {
             System.err.println("Error al conectar con la base de datos.");
-            e.printStackTrace();
         }
     }
 
@@ -56,7 +54,6 @@ public class ConexionBD {
                 System.out.println("Conexión cerrada.");
             } catch (SQLException e) {
                 System.err.println("Error al cerrar la conexión.");
-                e.printStackTrace();
             }
         }
     }
