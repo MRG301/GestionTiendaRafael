@@ -7,41 +7,40 @@ import java.util.List;
 import modelo.entidades.Direccion;
 import util.ConexionBD;
 
-public class DireccionDAOImplementacion implements DireccionDAO{
+public class DireccionDAOImplementacion implements DireccionDAO {
 
-    private Connection conexion;
+    private final Connection conexion;
 
     public DireccionDAOImplementacion() {
         this.conexion = ConexionBD.getInstance().getConexion();
     }
 
-    public boolean agregarDireccion(Direccion direccion) {
-        String sql = "INSERT INTO direccion (calle, numero, ciudad, codigo_postal, estado) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, direccion.getCalle());
-            ps.setString(2, direccion.getNumero());
-            ps.setString(3, direccion.getCiudad());
-            ps.setString(4, direccion.getCodigoPostal());
-            ps.setString(5, direccion.getEstado());
-            int filasAfectadas = ps.executeUpdate();
-            if (filasAfectadas == 0) {
-                throw new SQLException("Agregar dirección falló, ninguna fila afectada.");
+    @Override
+    public void agregarDireccion(Direccion direccion) throws Exception {
+        String sqlDireccion = "INSERT INTO direccion (calle, numero, ciudad, codigo_postal, estado) VALUES (?, ?, ?, ?, ?) RETURNING id_direccion";
+        try (PreparedStatement stmtDireccion = conexion.prepareStatement(sqlDireccion)) {
+            stmtDireccion.setString(1, direccion.getCalle());
+            stmtDireccion.setString(2, direccion.getNumero());
+            stmtDireccion.setString(3, direccion.getCiudad());
+            stmtDireccion.setString(4, direccion.getCodigoPostal());
+            stmtDireccion.setString(5, direccion.getEstado());
+
+            ResultSet rs = stmtDireccion.executeQuery();
+            if (rs.next()) {
+                int direccionId = rs.getInt("id_direccion");
+                direccion.setIdDireccion(direccionId); // Asignar el ID al objeto Dirección
+            } else {
+                throw new Exception("Error al obtener el ID de la dirección recién insertada.");
             }
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    direccion.setIdDireccion(generatedKeys.getInt(1));
-                } else {
-                    throw new SQLException("Agregar dirección falló, no se obtuvo el ID.");
-                }
-            }
-            return true;
+
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new Exception("Error al agregar la dirección: " + e.getMessage());
         }
-        return false;
     }
 
-    public boolean actualizarDireccion(Direccion direccion) {
+    @Override
+    public boolean actualizarDireccion(Direccion direccion) throws Exception {
         String sql = "UPDATE direccion SET calle = ?, numero = ?, ciudad = ?, codigo_postal = ?, estado = ? WHERE id_direccion = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, direccion.getCalle());
@@ -54,11 +53,12 @@ public class DireccionDAOImplementacion implements DireccionDAO{
             return filasAfectadas > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new Exception("Error al actualizar la dirección: " + e.getMessage());
         }
-        return false;
     }
 
-    public boolean eliminarDireccion(int idDireccion) {
+    @Override
+    public boolean eliminarDireccion(int idDireccion) throws Exception {
         String sql = "DELETE FROM direccion WHERE id_direccion = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idDireccion);
@@ -66,11 +66,12 @@ public class DireccionDAOImplementacion implements DireccionDAO{
             return filasAfectadas > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new Exception("Error al eliminar la dirección: " + e.getMessage());
         }
-        return false;
     }
 
-    public Direccion obtenerDireccionPorId(int idDireccion) {
+    @Override
+    public Direccion obtenerDireccionPorId(int idDireccion) throws Exception {
         String sql = "SELECT * FROM direccion WHERE id_direccion = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idDireccion);
@@ -84,15 +85,18 @@ public class DireccionDAOImplementacion implements DireccionDAO{
                             rs.getString("codigo_postal"),
                             rs.getString("estado")
                     );
+                } else {
+                    return null;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new Exception("Error al obtener la dirección por ID: " + e.getMessage());
         }
-        return null;
     }
 
-    public List<Direccion> obtenerTodasLasDirecciones() {
+    @Override
+    public List<Direccion> obtenerTodasLasDirecciones() throws Exception {
         List<Direccion> direcciones = new ArrayList<>();
         String sql = "SELECT * FROM direccion";
         try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
@@ -107,9 +111,10 @@ public class DireccionDAOImplementacion implements DireccionDAO{
                 );
                 direcciones.add(direccion);
             }
+            return direcciones;
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new Exception("Error al obtener todas las direcciones: " + e.getMessage());
         }
-        return direcciones;
     }
 }

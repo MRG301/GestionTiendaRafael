@@ -1,14 +1,15 @@
-
 package dao.interfaces;
 
 import java.util.List;
 import modelo.entidades.Cliente;
 
 public interface ClienteDAO {
-    boolean agregarCliente(Cliente cliente);
-    boolean actualizarCliente(Cliente cliente);
-    boolean eliminarCliente(int idCliente);
-    Cliente obtenerClientePorId(int idCliente);
-    List<Cliente> obtenerTodosLosClientes();
-    List<Cliente> obtenerClientesPorTipo(String tipoCliente);
+
+    void agregarCliente(Cliente cliente) throws Exception;
+    Cliente obtenerClientePorId(int id) throws Exception;
+    List<Cliente> obtenerTodosLosClientes() throws Exception;
+    void actualizarCliente(Cliente cliente) throws Exception;
+    void eliminarCliente(int id) throws Exception;
+    List<Cliente> buscarClientesPorId(int id) throws Exception;
+    List<Cliente> buscarClientesPorNombre(String nombre) throws Exception;
 }

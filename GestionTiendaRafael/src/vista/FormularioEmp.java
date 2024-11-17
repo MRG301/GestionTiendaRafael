@@ -1,24 +1,41 @@
 package vista;
 
+import dao.implementacion.DireccionDAOImplementacion;
 import dao.implementacion.EmpleadoDAOImplementacion;
+import dao.implementacion.PersonaDAOImplementacion;
+import dao.implementacion.UsuarioDAOImplementacion;
+import dao.interfaces.DireccionDAO;
+import dao.interfaces.PersonaDAO;
+import dao.interfaces.UsuarioDAO;
+import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import modelo.entidades.Direccion;
 import modelo.entidades.Empleado;
-import modelo.enums.RolEmpleado;
+import modelo.entidades.Persona;
+import modelo.entidades.Usuario;
+import modelo.enums.Rol;
+import util.Sesion;
 
 public class FormularioEmp extends javax.swing.JPanel {
 
-    private GestionEmpleados gestionEmpleados;
-    private Empleado empleado; // Puede ser null para agregar
-    private EmpleadoDAOImplementacion empleadoDAO;
+    private final GestionEmpleados gestionEmpleados;
+    private final Empleado empleado; // Puede ser null para agregar
+    private final EmpleadoDAOImplementacion empleadoDAO;
+
+    private final UsuarioDAO usuarioDAO;
+    private final PersonaDAO personaDAO;
+    private final DireccionDAO direccionDAO;
 
     public FormularioEmp(GestionEmpleados gestionEmpleados, Empleado empleado) {
         this.gestionEmpleados = gestionEmpleados;
         this.empleado = empleado;
         this.empleadoDAO = new EmpleadoDAOImplementacion();
+        this.direccionDAO = new DireccionDAOImplementacion();
+        this.personaDAO = new PersonaDAOImplementacion();
+        this.usuarioDAO = new UsuarioDAOImplementacion();
         initComponents();
-        cargarPuestos(); // Llama al método para cargar los puestos
+        cargarPuestos();
 
         if (empleado != null) {
             cargarDatosEmpleado();
@@ -29,9 +46,12 @@ public class FormularioEmp extends javax.swing.JPanel {
     }
 
     private void cargarPuestos() {
+        Usuario usuarioActual = Sesion.getUsuarioActual();
         cmbPuesto.removeAllItems();
-        for (RolEmpleado rol : RolEmpleado.values()) {
-            cmbPuesto.addItem(rol); // Agregar el enum directamente sin convertir a String
+        for (Rol rol : Rol.values()) {
+            if (usuarioActual.getRoles().contains(Rol.SUPERADMIN) || rol != Rol.SUPERADMIN) {
+                cmbPuesto.addItem(rol);
+            }
         }
     }
 
@@ -64,6 +84,10 @@ public class FormularioEmp extends javax.swing.JPanel {
         txtApellidoEmp = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         lblTitulo = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        txtUsuarioEmp = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        txtContrasenaEmp = new javax.swing.JPasswordField();
 
         jLabel11.setText("Estado");
 
@@ -119,18 +143,37 @@ public class FormularioEmp extends javax.swing.JPanel {
 
         jLabel4.setText("Apellido:");
 
+        jLabel1.setText("Usuario");
+
+        txtUsuarioEmp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUsuarioEmpActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Contraseña");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(73, 73, 73)
-                .addComponent(btnCancelar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnGuardar)
-                .addGap(96, 96, 96))
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(184, 184, 184)
+                        .addComponent(lblTitulo))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(69, 69, 69)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel13)
+                            .addComponent(btnCancelar))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(93, 93, 93)
+                                .addComponent(btnGuardar))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(31, 31, 31)
+                                .addComponent(cmbPuesto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(52, 52, 52)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -159,29 +202,29 @@ public class FormularioEmp extends javax.swing.JPanel {
                                     .addComponent(jLabel10)
                                     .addComponent(jLabel11)))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel13)
-                                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(txtCalleEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jLabel12))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(46, 46, 46)
-                                        .addComponent(cmbPuesto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel1)
+                                        .addGap(40, 40, 40)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtCalleEmp, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                                    .addComponent(txtUsuarioEmp))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel12)
+                                    .addComponent(jLabel2))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(txtNumeroEmp, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
                             .addComponent(txtCiudadEmp)
                             .addComponent(txtCodigoEmp)
                             .addComponent(txtEstadoEmp)
-                            .addComponent(txtSalario)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(184, 184, 184)
-                        .addComponent(lblTitulo)))
-                .addContainerGap(59, Short.MAX_VALUE))
+                            .addComponent(txtSalario)
+                            .addComponent(txtContrasenaEmp))))
+                .addContainerGap(53, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -220,13 +263,19 @@ public class FormularioEmp extends javax.swing.JPanel {
                     .addComponent(txtSalario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txtUsuarioEmp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtContrasenaEmp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbPuesto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel13))
-                .addGap(14, 14, 14)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnGuardar)
-                    .addComponent(btnCancelar))
-                .addContainerGap(45, Short.MAX_VALUE))
+                    .addComponent(btnCancelar)
+                    .addComponent(btnGuardar))
+                .addGap(19, 19, 19))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -245,22 +294,39 @@ public class FormularioEmp extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreEmpActionPerformed
     private void cargarDatosEmpleado() {
-        txtNombreEmp.setText(empleado.getNombre());
-        txtApellidoEmp.setText(empleado.getApellido());
-        txtEmailEmp.setText(empleado.getEmail());
-        txtTelefonoEmp.setText(empleado.getTelefono());
-        txtCalleEmp.setText(empleado.getDireccion().getCalle());
-        txtNumeroEmp.setText(empleado.getDireccion().getNumero());
-        txtCiudadEmp.setText(empleado.getDireccion().getCiudad());
-        txtCodigoEmp.setText(empleado.getDireccion().getCodigoPostal());
-        txtEstadoEmp.setText(empleado.getDireccion().getEstado());
-        txtSalario.setText(String.valueOf(empleado.getSalario()));
-        cmbPuesto.setSelectedItem(empleado.getRol());
+        if (empleado != null) {
+            // Cargar datos personales
+            txtNombreEmp.setText(empleado.getDatosPersonales().getNombre());
+            txtApellidoEmp.setText(empleado.getDatosPersonales().getApellido());
+            txtEmailEmp.setText(empleado.getDatosPersonales().getEmail());
+            txtTelefonoEmp.setText(empleado.getDatosPersonales().getTelefono());
+
+            // Cargar datos de dirección
+            Direccion direccion = empleado.getDatosPersonales().getDireccion();
+            txtCalleEmp.setText(direccion.getCalle());
+            txtNumeroEmp.setText(direccion.getNumero());
+            txtCiudadEmp.setText(direccion.getCiudad());
+            txtCodigoEmp.setText(direccion.getCodigoPostal());
+            txtEstadoEmp.setText(direccion.getEstado());
+
+            // Cargar datos laborales
+            cmbPuesto.setSelectedItem(empleado.getRol());
+            txtSalario.setText(String.valueOf(empleado.getSalario()));
+
+            // Cargar datos de usuario
+            txtUsuarioEmp.setText(empleado.getUsuario().getUsername());
+            // Por razones de seguridad, es mejor no mostrar la contraseña
+            // txtContrasenaEmp.setText(""); // Dejar vacío
+
+            // Si deseas permitir la edición de la contraseña, considera solicitar al usuario que ingrese una nueva
+            // y solo actualizar la contraseña si el campo no está vacío
+        }
     }
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
 
-        RolEmpleado rolSeleccionado = (RolEmpleado) cmbPuesto.getSelectedItem();
+        Rol rolSeleccionado = (Rol) cmbPuesto.getSelectedItem();
 
+        // Validaciones de campos vacíos
         if (txtNombreEmp.getText().trim().isEmpty()
                 || txtApellidoEmp.getText().trim().isEmpty()
                 || txtEmailEmp.getText().trim().isEmpty()
@@ -270,7 +336,9 @@ public class FormularioEmp extends javax.swing.JPanel {
                 || txtCiudadEmp.getText().trim().isEmpty()
                 || txtCodigoEmp.getText().trim().isEmpty()
                 || txtEstadoEmp.getText().trim().isEmpty()
-                || txtSalario.getText().trim().isEmpty()) {
+                || txtSalario.getText().trim().isEmpty()
+                || txtUsuarioEmp.getText().trim().isEmpty()
+                || txtContrasenaEmp.getPassword().length == 0) {
             JOptionPane.showMessageDialog(this, "Por favor, completa todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -287,69 +355,90 @@ public class FormularioEmp extends javax.swing.JPanel {
             return;
         }
 
-        if (empleado == null) { // Agregar
-            Direccion direccion = new Direccion();
-            direccion.setCalle(txtCalleEmp.getText().trim());
-            direccion.setNumero(txtNumeroEmp.getText().trim());
-            direccion.setCiudad(txtCiudadEmp.getText().trim());
-            direccion.setCodigoPostal(txtCodigoEmp.getText().trim());
-            direccion.setEstado(txtEstadoEmp.getText().trim());
+        // Obtener username y contraseña
+        String username = txtUsuarioEmp.getText().trim();
+        String password = new String(txtContrasenaEmp.getPassword()).trim();
 
-            Empleado nuevoEmpleado = new Empleado(
-                    0, // ID será asignado automáticamente
-                    txtNombreEmp.getText().trim(),
-                    txtApellidoEmp.getText().trim(),
-                    txtEmailEmp.getText().trim(),
-                    txtTelefonoEmp.getText().trim(),
-                    direccion,
-                    rolSeleccionado, // Asignación del rol
-                    salario
-            );
-
-            boolean creado = empleadoDAO.agregarEmpleado(nuevoEmpleado);
-            if (creado) {
-                JOptionPane.showMessageDialog(this, "Empleado agregado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                gestionEmpleados.cargarDatosTabla(); // Refrescar la tabla en la vista principal
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al agregar el empleado.", "Error", JOptionPane.ERROR_MESSAGE);
+        // Verificar si el username ya existe
+        try {
+            Usuario usuarioExistente = usuarioDAO.obtenerUsuarioPorUsername(username);
+            if (usuarioExistente != null) {
+                JOptionPane.showMessageDialog(this, "El nombre de usuario ya existe. Por favor, elige otro.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        } else { // Editar
-            Direccion direccion = empleado.getDireccion();
-            direccion.setCalle(txtCalleEmp.getText().trim());
-            direccion.setNumero(txtNumeroEmp.getText().trim());
-            direccion.setCiudad(txtCiudadEmp.getText().trim());
-            direccion.setCodigoPostal(txtCodigoEmp.getText().trim());
-            direccion.setEstado(txtEstadoEmp.getText().trim());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al verificar el nombre de usuario: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            empleado.setNombre(txtNombreEmp.getText().trim());
-            empleado.setApellido(txtApellidoEmp.getText().trim());
-            empleado.setEmail(txtEmailEmp.getText().trim());
-            empleado.setTelefono(txtTelefonoEmp.getText().trim());
-            empleado.setRol(rolSeleccionado); // Asignación del rol
-            empleado.setSalario(salario);
+        // Crear objeto Direccion
+        Direccion direccion = new Direccion(
+                txtCalleEmp.getText().trim(),
+                txtNumeroEmp.getText().trim(),
+                txtCiudadEmp.getText().trim(),
+                txtCodigoEmp.getText().trim(),
+                txtEstadoEmp.getText().trim()
+        );
 
-            boolean actualizado = empleadoDAO.actualizarEmpleado(empleado);
-            if (actualizado) {
-                JOptionPane.showMessageDialog(this, "Empleado actualizado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                gestionEmpleados.cargarDatosTabla(); // Refrescar la tabla en la vista principal
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al actualizar el empleado.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+        // Crear objeto Persona
+        Persona datosPersonales = new Persona(
+                txtNombreEmp.getText().trim(),
+                txtApellidoEmp.getText().trim(),
+                txtEmailEmp.getText().trim(),
+                txtTelefonoEmp.getText().trim(),
+                direccion
+        );
+
+        // Crear objeto Usuario
+        Usuario usuario = new Usuario(
+                username,
+                password, // La contraseña se encriptará en el método agregarUsuario
+                Set.of(rolSeleccionado)
+        );
+
+        // Crear objeto Empleado
+        Empleado nuevoEmpleado = new Empleado(
+                datosPersonales,
+                rolSeleccionado.name(),
+                salario,
+                rolSeleccionado,
+                usuario
+        );
+
+        // Guardar el Empleado en la base de datos
+        try {
+            empleadoDAO.agregarEmpleado(nuevoEmpleado);
+            JOptionPane.showMessageDialog(this, "Empleado agregado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            gestionEmpleados.cargarDatosTabla(); // Refrescar la tabla en la vista principal
+            cerrarFormulario();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al agregar el empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnGuardarActionPerformed
-
+    private void cerrarFormulario() {
+        java.awt.Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        if (parentWindow != null) {
+            parentWindow.dispose();
+        }
+    }
     private void cmbPuestoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbPuestoActionPerformed
 
     }//GEN-LAST:event_cmbPuestoActionPerformed
 
+    private void txtUsuarioEmpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsuarioEmpActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtUsuarioEmpActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancelar;
     private javax.swing.JButton btnGuardar;
-    private javax.swing.JComboBox<RolEmpleado> cmbPuesto;
+    private javax.swing.JComboBox<modelo.enums.Rol> cmbPuesto;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -362,11 +451,13 @@ public class FormularioEmp extends javax.swing.JPanel {
     private javax.swing.JTextField txtCalleEmp;
     private javax.swing.JTextField txtCiudadEmp;
     private javax.swing.JTextField txtCodigoEmp;
+    private javax.swing.JPasswordField txtContrasenaEmp;
     private javax.swing.JTextField txtEmailEmp;
     private javax.swing.JTextField txtEstadoEmp;
     private javax.swing.JTextField txtNombreEmp;
     private javax.swing.JTextField txtNumeroEmp;
     private javax.swing.JTextField txtSalario;
     private javax.swing.JTextField txtTelefonoEmp;
+    private javax.swing.JTextField txtUsuarioEmp;
     // End of variables declaration//GEN-END:variables
 }

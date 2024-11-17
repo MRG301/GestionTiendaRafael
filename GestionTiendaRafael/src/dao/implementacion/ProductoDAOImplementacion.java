@@ -15,37 +15,29 @@ import util.ConexionBD;
 
 public class ProductoDAOImplementacion implements ProductoDAO {
 
-   private Connection conexion;
+    private Connection conexion;
 
     public ProductoDAOImplementacion() {
         this.conexion = ConexionBD.getInstance().getConexion();
     }
- 
+
     @Override
     public boolean agregarProducto(Producto producto) {
-        String sql = "INSERT INTO producto (nombre, descripcion, precio, stock, categoria) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, producto.getNombre());
-            ps.setString(2, producto.getDescripcion());
-            ps.setDouble(3, producto.getPrecio());
-            ps.setInt(4, producto.getStock());
-            ps.setString(5, producto.getCategoria().name()); // Almacena el enum como String
+        String sql = "INSERT INTO producto (id_producto, nombre, descripcion, precio, stock, categoria) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setLong(1, producto.getIdProducto());
+            ps.setString(2, producto.getNombre());
+            ps.setString(3, producto.getDescripcion());
+            ps.setDouble(4, producto.getPrecio());
+            ps.setInt(5, producto.getStock());
+            ps.setString(6, producto.getCategoria().name());
+
             int filasAfectadas = ps.executeUpdate();
-            if (filasAfectadas == 0) {
-                throw new SQLException("Agregar producto falló, ninguna fila afectada.");
-            }
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    producto.setIdProducto(generatedKeys.getLong(1));
-                } else {
-                    throw new SQLException("Agregar producto falló, no se obtuvo el ID.");
-                }
-            }
-            return true;
+            return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace(); // Considera usar un sistema de logging
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     @Override

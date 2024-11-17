@@ -12,6 +12,7 @@ public class Direccion {
     public Direccion() {
     }
 
+    // Constructor completo
     public Direccion(int idDireccion, String calle, String numero, String ciudad, String codigoPostal, String estado) {
         this.idDireccion = idDireccion;
         this.calle = calle;
@@ -21,6 +22,7 @@ public class Direccion {
         this.estado = estado;
     }
 
+    // Constructor sin ID (para inserciones)
     public Direccion(String calle, String numero, String ciudad, String codigoPostal, String estado) {
         this.calle = calle;
         this.numero = numero;
