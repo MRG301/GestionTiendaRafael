@@ -57,12 +57,6 @@ public class GestionCliente extends javax.swing.JFrame {
             }
         });
 
-        // Añadir listener al botón Regresar
-        btnRegresarCliente.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRegresarClienteActionPerformed(evt);
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")
@@ -195,8 +189,14 @@ public class GestionCliente extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
-        FormularioCliente formularioCliente = new FormularioCliente(this, null);
-        formularioCliente.setVisible(true);
+        FormularioClienteVista formulario = new FormularioClienteVista(this, null); // 'this' es AdministracionVista que extiende JFrame
+        formulario.setVisible(true);
+
+        // Después de cerrar el formulario, verificar si se registró un cliente
+        Cliente nuevoCliente = formulario.getCliente();
+        if (nuevoCliente != null) {
+            cargarDatosTabla(); // Implementa este método para refrescar la tabla de clientes
+        }
     }//GEN-LAST:event_btnAgregarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
@@ -235,7 +235,7 @@ public class GestionCliente extends javax.swing.JFrame {
             try {
                 Cliente cliente = clienteDAO.obtenerClientePorId(idCliente);
                 if (cliente != null) {
-                    FormularioCliente formularioCliente = new FormularioCliente(this, cliente);
+                    FormularioClienteVista formularioCliente = new FormularioClienteVista(this, cliente);
                     formularioCliente.setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(this, "No se pudo encontrar el cliente seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -349,10 +349,10 @@ public class GestionCliente extends javax.swing.JFrame {
                 model.addRow(fila);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al buscar clientes: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Error al buscar clientes: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

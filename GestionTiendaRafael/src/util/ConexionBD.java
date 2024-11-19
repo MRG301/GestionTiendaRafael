@@ -10,11 +10,10 @@ public class ConexionBD {
     private Connection conexion;
 
     // Configuración de la conexión
-    private static final String URL = "jdbc:postgresql://localhost:5432/gestionTienda"; // Cambia 'localhost' y '5432' si es necesario
-    private static final String USER = "postgres"; // Reemplaza con tu usuario de PostgreSQL
-    private static final String PASSWORD = "uacm123"; // Reemplaza con tu contraseña de PostgreSQL
+    private static final String URL = "jdbc:postgresql://localhost:5432/gestionTienda";
+    private static final String USER = "postgres";
+    private static final String PASSWORD = "uacm123";
 
-    // Constructor privado para implementar el patrón Singleton
     private ConexionBD() {
         try {
             // Registrar el driver de PostgreSQL
@@ -23,9 +22,9 @@ public class ConexionBD {
             conexion = DriverManager.getConnection(URL, USER, PASSWORD);
             System.out.println("Conexión exitosa a la base de datos.");
         } catch (ClassNotFoundException e) {
-            System.err.println("Driver de PostgreSQL no encontrado.");
+            System.err.println("Driver no encontrado.");
         } catch (SQLException e) {
-            System.err.println("Error al conectar con la base de datos.");
+            System.err.println("Error al conectar con la BD.");
         }
     }
 

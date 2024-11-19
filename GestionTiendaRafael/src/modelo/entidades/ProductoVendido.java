@@ -8,23 +8,27 @@ public class ProductoVendido {
     private int cantidad;
     private double precioUnitario;
     private double subtotal;
+    private Producto producto;
 
-    public ProductoVendido(long idProductoVendido, long idVenta, long idProducto, int cantidad, double precioUnitario, double subtotal) {
+    // Constructor completo
+    public ProductoVendido(long idProductoVendido, long idVenta, long idProducto, int cantidad, double precioUnitario, double subtotal, Producto producto) {
         this.idProductoVendido = idProductoVendido;
         this.idVenta = idVenta;
         this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.subtotal = subtotal;
+        this.producto = producto;
     }
 
-    // Constructor sin ID (para inserciones donde el ID se genera automáticamente)
-    public ProductoVendido(long idVenta, long idProducto, int cantidad, double precioUnitario, double subtotal) {
+    // Constructor simplificado
+    public ProductoVendido(long idVenta, Producto producto, int cantidad) {
         this.idVenta = idVenta;
-        this.idProducto = idProducto;
+        this.idProducto = producto.getIdProducto();
+        this.producto = producto;
         this.cantidad = cantidad;
-        this.precioUnitario = precioUnitario;
-        this.subtotal = subtotal;
+        this.precioUnitario = producto.getPrecio();
+        this.subtotal = cantidad * precioUnitario;
     }
 
     public long getIdProductoVendido() {
@@ -73,6 +77,14 @@ public class ProductoVendido {
 
     public void setSubtotal(double subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public Producto getProducto() {
+        return producto;
+    }
+
+    public void setProducto(Producto producto) {
+        this.producto = producto;
     }
 
 }

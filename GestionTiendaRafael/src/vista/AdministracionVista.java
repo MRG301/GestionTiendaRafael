@@ -126,19 +126,12 @@ public class AdministracionVista extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    private void cerrarSesion() {
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Desea cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            Sesion.cerrarSesion();
-            new LoginVista().setVisible(true);
-            this.dispose();
-        }
-    }
+
     private void btnCerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarSesionActionPerformed
-        cerrarSesion();
         SwingUtilities.invokeLater(() -> {
             new LoginVista().setVisible(true);
         });
+        this.dispose();
     }//GEN-LAST:event_btnCerrarSesionActionPerformed
 
     private void btnGestionarEmpleadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGestionarEmpleadosActionPerformed
@@ -152,6 +145,7 @@ public class AdministracionVista extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             new GestionProducto().setVisible(true);
         });
+        dispose();
     }//GEN-LAST:event_btnGestionarProductosActionPerformed
 
     private void btnGestionarVentasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGestionarVentasActionPerformed
@@ -164,6 +158,7 @@ public class AdministracionVista extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             new GestionCliente().setVisible(true);
         });
+        dispose();
     }//GEN-LAST:event_btnGestionarClientesActionPerformed
 
     public static void main(String args[]) {

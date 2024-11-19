@@ -1,22 +1,81 @@
 package dao.implementacion;
 
+import dao.interfaces.ProductoDAO;
 import dao.interfaces.VentaDAO;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import modelo.entidades.Producto;
 import modelo.entidades.ProductoVendido;
 import modelo.entidades.Venta;
 import util.ConexionBD;
 
 public class VentaDAOImplementacion implements VentaDAO {
 
-    private Connection conexion;
+    private final Connection conexion;
+    private ProductoDAO productoDAO;
 
     public VentaDAOImplementacion() {
         this.conexion = ConexionBD.getInstance().getConexion();
     }
-    
+
+    @Override
+    public boolean guardarVenta(Venta venta) throws Exception {
+        String sqlVenta = "INSERT INTO venta (fecha, total, id_vendedor, id_cliente) VALUES (?, ?, ?, ?) RETURNING id_venta";
+        String sqlProductoVendido = "INSERT INTO producto_vendido (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
+
+        try {
+            conexion.setAutoCommit(false);
+
+            // Insertar la venta
+            long idVenta;
+            try (PreparedStatement psVenta = conexion.prepareStatement(sqlVenta)) {
+                psVenta.setDate(1, Date.valueOf(venta.getFecha()));
+                psVenta.setDouble(2, venta.getTotal());
+                psVenta.setLong(3, venta.getIdVendedor());
+                psVenta.setLong(4, venta.getIdCliente());
+
+                ResultSet rs = psVenta.executeQuery();
+                if (rs.next()) {
+                    idVenta = rs.getLong(1);
+                    venta.setIdVenta(idVenta);
+                } else {
+                    throw new SQLException("Agregar venta falló, no se obtuvo el ID.");
+                }
+            }
+
+            // Insertar los productos vendidos
+            try (PreparedStatement psProductoVendido = conexion.prepareStatement(sqlProductoVendido)) {
+                for (ProductoVendido pv : venta.getProductosVendidos()) {
+                    psProductoVendido.setLong(1, venta.getIdVenta());
+                    psProductoVendido.setLong(2, pv.getIdProducto());
+                    psProductoVendido.setInt(3, pv.getCantidad());
+                    psProductoVendido.setDouble(4, pv.getPrecioUnitario());
+                    psProductoVendido.setDouble(5, pv.getSubtotal());
+                    psProductoVendido.addBatch();
+                }
+                psProductoVendido.executeBatch();
+            }
+
+            // Confirmar la transacción
+            conexion.commit();
+            return true;
+        } catch (SQLException e) {
+            try {
+                conexion.rollback();
+            } catch (SQLException ex) {
+                throw new Exception("Error al hacer rollback: " + ex.getMessage());
+            }
+            throw new Exception("Error al guardar la venta: " + e.getMessage());
+        } finally {
+            try {
+                conexion.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new Exception("Error al restablecer autoCommit: " + e.getMessage());
+            }
+        }
+    }
 
     @Override
     public boolean agregarVenta(Venta venta) {
@@ -187,15 +246,16 @@ public class VentaDAOImplementacion implements VentaDAO {
                     psProductos.setLong(1, idVenta);
                     try (ResultSet rsProductos = psProductos.executeQuery()) {
                         while (rsProductos.next()) {
+                            Producto producto = productoDAO.obtenerProductoPorId(rsProductos.getLong("id_producto"));
                             ProductoVendido pv = new ProductoVendido(
                                     rsProductos.getLong("id_producto_vendido"),
                                     rsProductos.getLong("id_venta"),
                                     rsProductos.getLong("id_producto"),
                                     rsProductos.getInt("cantidad"),
                                     rsProductos.getDouble("precio_unitario"),
-                                    rsProductos.getDouble("subtotal")
+                                    rsProductos.getDouble("subtotal"),
+                                    producto
                             );
-                            venta.getProductosVendidos().add(pv);
                         }
                     }
                     return venta;
@@ -209,6 +269,7 @@ public class VentaDAOImplementacion implements VentaDAO {
 
     @Override
     public List<Venta> obtenerTodasLasVentas() {
+        productoDAO = new ProductoDAOImplementacion();
         List<Venta> ventas = new ArrayList<>();
         String sqlVenta = "SELECT * FROM venta";
         try (Statement stmt = conexion.createStatement(); ResultSet rsVenta = stmt.executeQuery(sqlVenta)) {
@@ -228,13 +289,15 @@ public class VentaDAOImplementacion implements VentaDAO {
                     psProductos.setLong(1, venta.getIdVenta());
                     try (ResultSet rsProductos = psProductos.executeQuery()) {
                         while (rsProductos.next()) {
+                            Producto producto = productoDAO.obtenerProductoPorId(rsProductos.getLong("id_producto"));
                             ProductoVendido pv = new ProductoVendido(
                                     rsProductos.getLong("id_producto_vendido"),
                                     rsProductos.getLong("id_venta"),
                                     rsProductos.getLong("id_producto"),
                                     rsProductos.getInt("cantidad"),
                                     rsProductos.getDouble("precio_unitario"),
-                                    rsProductos.getDouble("subtotal")
+                                    rsProductos.getDouble("subtotal"),
+                                    producto
                             );
                             venta.getProductosVendidos().add(pv);
                         }
@@ -245,6 +308,8 @@ public class VentaDAOImplementacion implements VentaDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace(); // Considera usar un sistema de logging
+        } catch (Exception e) {
+            e.printStackTrace(); // Maneja otras excepciones potenciales
         }
         return ventas;
     }
@@ -272,13 +337,15 @@ public class VentaDAOImplementacion implements VentaDAO {
                         psProductos.setLong(1, venta.getIdVenta());
                         try (ResultSet rsProductos = psProductos.executeQuery()) {
                             while (rsProductos.next()) {
+                                Producto producto = productoDAO.obtenerProductoPorId(rsProductos.getLong("id_producto"));
                                 ProductoVendido pv = new ProductoVendido(
                                         rsProductos.getLong("id_producto_vendido"),
                                         rsProductos.getLong("id_venta"),
                                         rsProductos.getLong("id_producto"),
                                         rsProductos.getInt("cantidad"),
                                         rsProductos.getDouble("precio_unitario"),
-                                        rsProductos.getDouble("subtotal")
+                                        rsProductos.getDouble("subtotal"),
+                                        producto
                                 );
                                 venta.getProductosVendidos().add(pv);
                             }
@@ -290,6 +357,8 @@ public class VentaDAOImplementacion implements VentaDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace(); // Considera usar un sistema de logging
+        } catch (Exception e) {
+            e.printStackTrace(); // Maneja otras excepciones potenciales
         }
         return ventas;
     }

@@ -6,6 +6,7 @@ import java.util.List;
 import modelo.entidades.Venta;
 
 public interface VentaDAO {
+    boolean guardarVenta(Venta venta) throws Exception;
     boolean agregarVenta(Venta venta);
     boolean actualizarVenta(Venta venta);
     boolean eliminarVenta(long idVenta);

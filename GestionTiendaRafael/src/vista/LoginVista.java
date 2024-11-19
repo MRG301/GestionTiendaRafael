@@ -157,9 +157,15 @@ public class LoginVista extends javax.swing.JFrame {
             });
         } else if (roles.contains(Rol.VENDEDOR)) {
             // Redirigir a VendedorVista
-            SwingUtilities.invokeLater(() -> {
-                new VendedorVista().setVisible(true);
-            });
+            Usuario usuarioActual = Sesion.getUsuarioActual();
+            if (usuarioActual != null) {
+                SwingUtilities.invokeLater(() -> {
+                    new VendedorVista(usuarioActual).setVisible(true);
+                });
+            } else {
+                JOptionPane.showMessageDialog(this, "No hay un usuario en sesión. Por favor, inicia sesión.", "Error", JOptionPane.ERROR_MESSAGE);
+                new LoginVista().setVisible(true); // Redirigir al login
+            }
         } else {
             JOptionPane.showMessageDialog(this, "No tiene asignado un rol válido.", "Error", JOptionPane.ERROR_MESSAGE);
         }

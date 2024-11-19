@@ -65,12 +65,6 @@ public class GestionEmpleados extends javax.swing.JFrame {
             }
         });
 
-        // Añadir listener al botón Regresar
-        btnRegresar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRegresarActionPerformed(evt);
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")
@@ -232,19 +226,21 @@ public class GestionEmpleados extends javax.swing.JFrame {
     private void btnEliminarEmpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarEmpActionPerformed
         int filaSeleccionada = tblTablaEmp.getSelectedRow();
         if (filaSeleccionada != -1) {
-            int idEmpleado = (int) tblTablaEmp.getValueAt(filaSeleccionada, 0);
-            int confirm = JOptionPane.showConfirmDialog(null, "¿Estás seguro de que deseas eliminar este empleado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+            int empleadoId = (int) tblTablaEmp.getValueAt(filaSeleccionada, 0);
+            int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro de eliminar este empleado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 try {
-                    empleadoDAO.eliminarEmpleado(idEmpleado);
-                    JOptionPane.showMessageDialog(null, "Empleado eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                    cargarDatosTabla();
+                    empleadoDAO.eliminarEmpleado(empleadoId);
+                    JOptionPane.showMessageDialog(this, "Empleado eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Error al eliminar el empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Error al eliminar el empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Cargar datos de la tabla independientemente del resultado
+                    cargarDatosTabla();
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Por favor, selecciona un empleado para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecciona un empleado para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_btnEliminarEmpActionPerformed
 
@@ -269,7 +265,6 @@ public class GestionEmpleados extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             new AdministracionVista().setVisible(true);
         });
-        // Cerrar la ventana actual
         this.dispose();
     }//GEN-LAST:event_btnRegresarActionPerformed
 
