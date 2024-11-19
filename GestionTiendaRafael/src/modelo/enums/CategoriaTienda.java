@@ -2,9 +2,9 @@
 package modelo.enums;
 
 public enum CategoriaTienda {
-    ELECTRONICA,
+    BEBIDAS,
     ROPA,
     ALIMENTOS,
     HOGAR,
-    DEPORTE;
+    DEPORTE
 }

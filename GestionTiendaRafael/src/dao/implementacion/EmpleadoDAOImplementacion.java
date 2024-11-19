@@ -37,7 +37,7 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
             usuarioDAO.agregarUsuario(empleado.getUsuario());
             int usuarioId = empleado.getUsuario().getId();
 
-            // Agregar la Persona (La Dirección ya se agregó en agregarPersona)
+            // Agregar la Persona
             personaDAO.agregarPersona(empleado.getDatosPersonales());
             int personaId = empleado.getDatosPersonales().getId();
 
@@ -74,8 +74,8 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
                 int empleadoId = rsEmpleado.getInt("id");
                 String puesto = rsEmpleado.getString("puesto");
                 double salario = rsEmpleado.getDouble("salario");
-                String rolStr = rsEmpleado.getString("rol"); // Cambiar tipo_empleado a rol
-                Rol rol = Rol.valueOf(rolStr); // Usar Rol en lugar de TipoRol
+                String rolStr = rsEmpleado.getString("rol");
+                Rol rol = Rol.valueOf(rolStr);
                 int personaId = rsEmpleado.getInt("persona_id");
                 int usuarioId = rsEmpleado.getInt("usuario_id");
 
@@ -110,7 +110,7 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
 
         try (PreparedStatement stmt = conexion.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                // Crear y poblar Dirección
+                // Crear Dirección
                 Direccion direccion = new Direccion();
                 direccion.setIdDireccion(rs.getInt("id_direccion"));
                 direccion.setCalle(rs.getString("calle"));
@@ -119,7 +119,7 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
                 direccion.setCodigoPostal(rs.getString("codigo_postal"));
                 direccion.setEstado(rs.getString("estado"));
 
-                // Crear y poblar Persona
+                // Crear Persona
                 Persona persona = new Persona();
                 persona.setId(rs.getInt("persona_id"));
                 persona.setNombre(rs.getString("nombre"));
@@ -128,7 +128,7 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
                 persona.setTelefono(rs.getString("telefono"));
                 persona.setDireccion(direccion);
 
-                // Crear y poblar Usuario
+                // Crear Usuario
                 Usuario usuario = new Usuario();
                 usuario.setId(rs.getInt("usuario_id"));
                 usuario.setUsername(rs.getString("username"));
@@ -156,7 +156,7 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
 
     @Override
     public void actualizarEmpleado(Empleado empleado) throws Exception {
-        // Iniciar una transacción
+
         try {
             conexion.setAutoCommit(false);
 
@@ -181,7 +181,6 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
 
         } catch (Exception e) {
             conexion.rollback();
-            e.printStackTrace();
             throw new Exception("Error al actualizar el empleado: " + e.getMessage());
         } finally {
             conexion.setAutoCommit(true);
@@ -190,54 +189,56 @@ public class EmpleadoDAOImplementacion implements EmpleadoDAO {
 
     @Override
     public void eliminarEmpleado(int empleadoId) throws Exception {
-    try {
-        conexion.setAutoCommit(false);
+        try {
+            conexion.setAutoCommit(false);
 
-        // Primero, obtener el Empleado para recuperar los IDs relacionados
-        Empleado empleado = obtenerEmpleadoPorId(empleadoId);
-        if (empleado == null) {
-            throw new Exception("Empleado no encontrado con ID: " + empleadoId);
+            // Obtener el Empleado
+            Empleado empleado = obtenerEmpleadoPorId(empleadoId);
+            if (empleado == null) {
+                throw new Exception("Empleado no encontrado con ID: " + empleadoId);
+            }
+
+            int usuarioId = empleado.getUsuario().getId();
+            int personaId = empleado.getDatosPersonales().getId();
+            int direccionId = empleado.getDatosPersonales().getDireccion().getIdDireccion();
+
+            // Eliminar de empleado
+            String sqlDeleteEmpleado = "DELETE FROM empleado WHERE id = ?";
+            try (PreparedStatement stmtDeleteEmpleado = conexion.prepareStatement(sqlDeleteEmpleado)) {
+                stmtDeleteEmpleado.setInt(1, empleadoId);
+                stmtDeleteEmpleado.executeUpdate();
+            }
+
+            // Eliminar de usuario
+            usuarioDAO.eliminarUsuario(usuarioId);
+
+            // Eliminar de persona
+            String sqlDeletePersona = "DELETE FROM persona WHERE id = ?";
+            try (PreparedStatement stmtDeletePersona = conexion.prepareStatement(sqlDeletePersona)) {
+                stmtDeletePersona.setInt(1, personaId);
+                stmtDeletePersona.executeUpdate();
+            }
+
+            // Eliminar de dirección
+            String sqlDeleteDireccion = "DELETE FROM direccion WHERE id_direccion = ?";
+            try (PreparedStatement stmtDeleteDireccion = conexion.prepareStatement(sqlDeleteDireccion)) {
+                stmtDeleteDireccion.setInt(1, direccionId);
+                stmtDeleteDireccion.executeUpdate();
+            }
+
+            conexion.commit();
+
+        } catch (Exception e) {
+            if (conexion != null && !conexion.getAutoCommit()) {
+                conexion.rollback();
+            }
+            throw new Exception("Error al eliminar el empleado: " + e.getMessage());
+        } finally {
+            if (conexion != null) {
+                conexion.setAutoCommit(true);
+            }
         }
-
-        int usuarioId = empleado.getUsuario().getId();
-        int personaId = empleado.getDatosPersonales().getId();
-        int direccionId = empleado.getDatosPersonales().getDireccion().getIdDireccion();
-
-        // Eliminar de empleado
-        String sqlDeleteEmpleado = "DELETE FROM empleado WHERE id = ?";
-        try (PreparedStatement stmtDeleteEmpleado = conexion.prepareStatement(sqlDeleteEmpleado)) {
-            stmtDeleteEmpleado.setInt(1, empleadoId);
-            stmtDeleteEmpleado.executeUpdate();
-        }
-
-        // Eliminar de usuario (también elimina de usuario_rol)
-        usuarioDAO.eliminarUsuario(usuarioId);
-
-        // Eliminar de persona
-        String sqlDeletePersona = "DELETE FROM persona WHERE id = ?";
-        try (PreparedStatement stmtDeletePersona = conexion.prepareStatement(sqlDeletePersona)) {
-            stmtDeletePersona.setInt(1, personaId);
-            stmtDeletePersona.executeUpdate();
-        }
-
-        // Eliminar de dirección
-        String sqlDeleteDireccion = "DELETE FROM direccion WHERE id_direccion = ?";
-        try (PreparedStatement stmtDeleteDireccion = conexion.prepareStatement(sqlDeleteDireccion)) {
-            stmtDeleteDireccion.setInt(1, direccionId);
-            stmtDeleteDireccion.executeUpdate();
-        }
-
-        conexion.commit();
-
-    } catch (Exception e) {
-        conexion.rollback();
-        e.printStackTrace();
-        throw new Exception("Error al eliminar el empleado: " + e.getMessage());
-    } finally {
-        conexion.setAutoCommit(true);
     }
-}
-
 
     @Override
     public List<Empleado> buscarEmpleadosPorId(int id) throws Exception {

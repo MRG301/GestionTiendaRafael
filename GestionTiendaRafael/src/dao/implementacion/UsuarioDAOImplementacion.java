@@ -131,11 +131,7 @@ public class UsuarioDAOImplementacion implements UsuarioDAO {
             conexion.commit();
 
         } catch (SQLException e) {
-            conexion.rollback();
-            e.printStackTrace();
             throw new Exception("Error al eliminar el usuario: " + e.getMessage());
-        } finally {
-            conexion.setAutoCommit(true);
         }
     }
 

@@ -1,15 +1,18 @@
 package dao.implementacion;
 
+import dao.interfaces.ProductoDAO;
 import dao.interfaces.ProductoVendidoDAO;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import modelo.entidades.Producto;
 import modelo.entidades.ProductoVendido;
 import util.ConexionBD;
 
 public class ProductoVendidoDAOImplementacion implements ProductoVendidoDAO {
 
     private Connection conexion;
+    private ProductoDAO productoDAO;
 
     public ProductoVendidoDAOImplementacion() {
         this.conexion = ConexionBD.getInstance().getConexion();
@@ -57,25 +60,38 @@ public class ProductoVendidoDAOImplementacion implements ProductoVendidoDAO {
 
     @Override
     public ProductoVendido obtenerProductoVendidoPorId(long idProductoVendido) {
+        productoDAO = new ProductoDAOImplementacion();
+        ProductoVendido pv = null;
         String sql = "SELECT * FROM producto_vendido WHERE id_producto_vendido = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setLong(1, idProductoVendido);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new ProductoVendido(
+                    long idVenta = rs.getLong("id_venta");
+                    long idProducto = rs.getLong("id_producto");
+                    int cantidad = rs.getInt("cantidad");
+                    double precioUnitario = rs.getDouble("precio_unitario");
+                    double subtotal = rs.getDouble("subtotal");
+
+                    // Obtener el objeto Producto correspondiente
+                    Producto producto = productoDAO.obtenerProductoPorId(idProducto);
+
+                    // Usar el constructor completo
+                    pv = new ProductoVendido(
                             rs.getLong("id_producto_vendido"),
-                            rs.getLong("id_venta"),
-                            rs.getLong("id_producto"),
-                            rs.getInt("cantidad"),
-                            rs.getDouble("precio_unitario"),
-                            rs.getDouble("subtotal")
+                            idVenta,
+                            idProducto,
+                            cantidad,
+                            precioUnitario,
+                            subtotal,
+                            producto
                     );
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Considera usar un sistema de logging
         }
-        return null;
+        return pv;
     }
 
     @Override
@@ -86,19 +102,35 @@ public class ProductoVendidoDAOImplementacion implements ProductoVendidoDAO {
             ps.setLong(1, idVenta);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    ProductoVendido pv = new ProductoVendido(
-                            rs.getLong("id_producto_vendido"),
-                            rs.getLong("id_venta"),
-                            rs.getLong("id_producto"),
-                            rs.getInt("cantidad"),
-                            rs.getDouble("precio_unitario"),
-                            rs.getDouble("subtotal")
-                    );
-                    productosVendidos.add(pv);
+                    long idProductoVendido = rs.getLong("id_producto_vendido");
+                    long idProducto = rs.getLong("id_producto");
+                    int cantidad = rs.getInt("cantidad");
+                    double precioUnitario = rs.getDouble("precio_unitario");
+                    double subtotal = rs.getDouble("subtotal");
+
+                    // Obtener el objeto Producto correspondiente
+                    Producto producto = productoDAO.obtenerProductoPorId(idProducto);
+
+                    // Verificar que el producto no sea nulo
+                    if (producto != null) {
+                        ProductoVendido pv = new ProductoVendido(
+                                idProductoVendido,
+                                idVenta,
+                                idProducto,
+                                cantidad,
+                                precioUnitario,
+                                subtotal,
+                                producto
+                        );
+                        productosVendidos.add(pv);
+                    } else {
+                        // Manejar el caso en que el producto no existe
+                        System.err.println("Producto con ID " + idProducto + " no encontrado.");
+                    }
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Considera usar un sistema de logging más robusto
         }
         return productosVendidos;
     }

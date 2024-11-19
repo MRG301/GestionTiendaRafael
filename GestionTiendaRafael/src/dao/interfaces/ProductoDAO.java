@@ -1,4 +1,3 @@
-
 package dao.interfaces;
 
 import java.util.List;
@@ -12,4 +11,5 @@ public interface ProductoDAO {
     Producto obtenerProductoPorId(long idProducto); // Cambiado a long
     List<Producto> obtenerTodosLosProductos();
     List<Producto> obtenerProductosPorCategoria(CategoriaTienda categoria);
+    boolean actualizarStock(long idProducto, int cantidad) throws Exception;
 }

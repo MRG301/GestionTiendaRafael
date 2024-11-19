@@ -140,4 +140,17 @@ public class ProductoDAOImplementacion implements ProductoDAO {
         }
         return productos;
     }
+
+    @Override
+    public boolean actualizarStock(long idProducto, int cantidad) throws Exception {
+        String sqlActualizarStock = "UPDATE producto SET stock = stock + ? WHERE id_producto = ?";
+        try (PreparedStatement psActualizarStock = conexion.prepareStatement(sqlActualizarStock)) {
+            psActualizarStock.setInt(1, cantidad);
+            psActualizarStock.setLong(2, idProducto);
+            int filasAfectadas = psActualizarStock.executeUpdate();
+            return filasAfectadas > 0;
+        } catch (SQLException e) {
+            throw new Exception("Error al actualizar el stock: " + e.getMessage());
+        }
+    }
 }

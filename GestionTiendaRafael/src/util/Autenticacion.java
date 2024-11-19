@@ -17,7 +17,7 @@ public class Autenticacion {
         if (usuario != null) {
             return usuario;
         } else {
-            throw new Exception("Credenciales inválidas.");
+            throw new Exception("Usuario Invalido");
         }
     }
 }

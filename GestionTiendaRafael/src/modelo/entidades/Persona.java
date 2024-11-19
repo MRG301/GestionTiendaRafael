@@ -1,7 +1,5 @@
 package modelo.entidades;
 
-import modelo.entidades.Direccion;
-
 public class Persona {
 
     private int id;
